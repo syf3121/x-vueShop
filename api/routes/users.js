@@ -1,3 +1,5 @@
+
+
 let express = require('express');
 let router = express.Router();
 let User = require('./../models/user');
@@ -264,6 +266,40 @@ router.post("/setDefault", (req,res,next) => {
     })
   });
 });
+// 添加地址接口
+
+router.post('/addAddress',(req,res) =>{
+  let {userId} = req.cookies;
+  let {userName,streetName,postCode,tel} = req.body;
+  let addressId = (new Date()).getTime() + Math.random() * 9999;
+  User.findOne({userId},(err,doc) =>{
+    if(err){
+      return res.json({
+        status:'1',
+        msg:err.message
+      })
+    }
+    doc.addressList.push({
+      addressId,
+      userName,
+      streetName,
+      postCode,
+      tel
+    })
+    doc.save((err,doc)=>{
+      if(err){
+        return res.json({
+          status:'1',
+          msg:err.message
+        })
+      }
+      res.json({
+        status:'0',
+        msg:"添加地址成功"
+      })
+    })
+  })
+})
 
 //11.删除地址接口
 router.post("/delAddress", (req,res,next) => {
@@ -356,7 +392,8 @@ router.post("/payMent", (req,res,next) => {
 });
 //13.根据订单Id查询订单信息
 router.get("/orderDetail", (req,res,next) => {
-  let userId = req.cookies.userId,orderId = req.param("orderId");
+  let userId = req.cookies.userId,
+  orderId = req.param("orderId");
   User.findOne({userId}, (err,userInfo) => {
     if(err){
       return res.json({
@@ -378,8 +415,8 @@ router.get("/orderDetail", (req,res,next) => {
       if(item.orderId == orderId){
         orderTotal = item.orderTotal;
       }
-    });
-    if(orderTotal<=0){
+    }); 
+    if(orderTotal <= 0){
       return res.json({
        status:'120002',
        msg:'无此订单',
